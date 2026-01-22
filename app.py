@@ -1,35 +1,30 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from pydantic import BaseModel
 import sqlite3
 import time
 
-# Define data model from ESP32
-class SensorData(BaseModel):
-    temperature: float
-    humidity: float
+class GasData(BaseModel):
     sensor_id: str
+    ammonia_voltage: float
 
 app = FastAPI()
-
-# Initialize SQLite (or change to Mongo/PostgreSQL later)
 conn = sqlite3.connect("data.db", check_same_thread=False)
 cursor = conn.cursor()
 cursor.execute("""
-CREATE TABLE IF NOT EXISTS sensor_data (
+CREATE TABLE IF NOT EXISTS gas_data (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     sensor_id TEXT,
-    temperature REAL,
-    humidity REAL,
+    ammonia_voltage REAL,
     timestamp REAL
 )
 """)
 conn.commit()
 
 @app.post("/data")
-def receive_data(data: SensorData):
+def receive_data(data: GasData):
     cursor.execute(
-        "INSERT INTO sensor_data (sensor_id, temperature, humidity, timestamp) VALUES (?, ?, ?, ?)",
-        (data.sensor_id, data.temperature, data.humidity, time.time())
+        "INSERT INTO gas_data (sensor_id, ammonia_voltage, timestamp) VALUES (?, ?, ?)",
+        (data.sensor_id, data.ammonia_voltage, time.time())
     )
     conn.commit()
     return {"status": "success"}
