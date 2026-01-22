@@ -21,6 +21,13 @@ class SensorData(BaseModel):
 def root():
     return {"status": "Backend running"}
 
+@app.get("/health")
+def health():
+    return {
+        "status": "ok",
+        "service": "agro-backend"
+    }
+
 @app.post("/sensor-data")
 def receive_sensor_data(data: SensorData):
     latest_data["gas"] = data.gas
